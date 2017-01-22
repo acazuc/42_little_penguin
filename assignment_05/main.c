@@ -11,13 +11,6 @@ MODULE_DESCRIPTION("Basic module");
 
 char login[7] = "acazuc";
 
-static int ft_open(struct inode *inode, struct file *fp)
-{
-	printk(KERN_DEBUG "ft_open\n");
-	return 0;
-}
-EXPORT_SYMBOL(ft_open);
-
 static ssize_t ft_read(struct file *fp, char __user *data, size_t len
 		, loff_t *off)
 {
@@ -58,10 +51,9 @@ static ssize_t ft_write(struct file *fp, const char __user *data, size_t len
 		result = -EINVAL;
 		goto end;
 	}
-	if (memcmp(data, "acazuc", 6))
+	if (memcmp(data, login, 6))
 	{
-		//result = -EINVAL;
-		result = -EFAULT;
+		result = -EINVAL;
 		goto end;
 	}
 	result = 6;
@@ -71,19 +63,10 @@ end:
 }
 EXPORT_SYMBOL(ft_write);
 
-static int ft_release(struct inode *inode, struct file *fp)
-{
-	printk(KERN_DEBUG "ft_release\n");
-	return 0;
-}
-EXPORT_SYMBOL(ft_release);
-
 struct file_operations ops = {
 	.owner = THIS_MODULE,
-	.open = &ft_open,
 	.read = &ft_read,
 	.write = &ft_write,
-	.release = &ft_release
 };
 
 struct miscdevice ft_device = {

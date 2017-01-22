@@ -4,12 +4,17 @@
 #include <linux/errno.h>
 #include <linux/uaccess.h>
 #include <linux/jiffies.h>
+#include <linux/slab.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Aurelien Cazuc <acazuc@student.42.fr>");
 MODULE_DESCRIPTION("Debugfs test module");
 
 static char login[7] = "acazuc";
+
+static void *foo_data = NULL;
+static size_t foo_len = 0;
+DEFINE_SEMAPHORE(foo_lock);
 
 static struct dentry *file_fortytwo;
 static struct dentry *file_id;
@@ -100,14 +105,57 @@ EXPORT_SYMBOL(jiffies_read);
 static ssize_t foo_write(struct file *fp, const char __user *data
 		, size_t len, loff_t *off)
 {
-	return 0;
+	int result;
+	int available;
+
+	down(&foo_lock);
+	if (foo_len >= PAGE_SIZE)
+	{
+		result = 0;
+		goto end;
+	}
+	if (len < PAGE_SIZE - foo_len)
+		available = len;
+	else
+		available = PAGE_SIZE - foo_len;
+	result = copy_from_user(foo_data + foo_len, data, available);
+	if (result)
+		goto end;
+	foo_len += available;
+	*off = foo_len;
+	result = available;
+
+end:
+	up(&foo_lock);
+	return result;
 }
 EXPORT_SYMBOL(foo_write);
 
 static ssize_t foo_read(struct file *fp, char __user *data, size_t len,
 		loff_t *off)
 {
-	return 0;
+	int available;
+	int result;
+
+	down(&foo_lock);
+	if (*off >= foo_len)
+	{
+		result = 0;
+		goto end;
+	}
+	if (len < foo_len - *off)
+		available = len;
+	else
+		available = foo_len - *off;
+	result = copy_to_user(data + *off, data, available);
+	if (result)
+		goto end;
+	*off += available;
+	result = available;
+
+end:
+	up(&foo_lock);
+	return result;
 }
 EXPORT_SYMBOL(foo_read);
 
@@ -157,9 +205,16 @@ int init_module(void)
 		printk(KERN_ERR "Failed to create foo file\n");
 		goto err_jiffies;
 	}
+	if (!(foo_data = kmalloc(PAGE_SIZE, GFP_KERNEL)))
+	{
+		printk(KERN_ERR "Failed to allocate page of memory\n");
+		goto err_foo;
+	}
 	printk(KERN_INFO "fortytwo, id, jiffies & foo files created\n");
 	goto end;
 
+err_foo:
+	debugfs_remove(file_foo);
 err_jiffies:
 	debugfs_remove(file_jiffies);
 err_id:
@@ -175,5 +230,6 @@ end:
 void cleanup_module(void)
 {
 	debugfs_remove_recursive(file_fortytwo);
+	kfree(foo_data);
 	printk(KERN_INFO "Cleaning up module.\n");
 }

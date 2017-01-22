@@ -1,9 +1,9 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 
-MODULE_LICENSE("GPL")
-MODULE_AUTHOR("Aurelien Cazuc <acazuc@student.42.fr>")
-MODULE_DESCRIPTION("Basic module")
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Aurelien Cazuc <acazuc@student.42.fr>");
+MODULE_DESCRIPTION("Basic module");
 
 int init_module(void)
 {
