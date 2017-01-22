@@ -3,11 +3,11 @@
 
 int __init init_module(void)
 {
-	printk(KERN_INFO "Hello world !\n");
+	pr_info("Hello world !\n");
 	return 0;
 }
 
 void cleanup_module(void)
 {
-	printk(KERN_INFO "Cleaning up module.\n");
+	pr_info("Cleaning up module.\n");
 }
