@@ -1,1 +1,0 @@
-cmd_/root/42_little_penguin/assignment_04/main.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /root/42_little_penguin/assignment_04/main.ko /root/42_little_penguin/assignment_04/main.o /root/42_little_penguin/assignment_04/main.mod.o
