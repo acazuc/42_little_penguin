@@ -5,7 +5,6 @@
 #include <linux/fs.h>
 #include <linux/slab.h>
 
-// Dont have a license, LOL
 MODULE_LICENSE("LICENSE");
 MODULE_AUTHOR("Louis Solofrizzo <louis@ne02ptzero.me>");
 MODULE_DESCRIPTION("Useless module");
