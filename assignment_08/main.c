@@ -70,7 +70,7 @@ ssize_t myfd_write(struct file *fp, const char __user *user, size_t size
 {
 	ssize_t res;
 	
-	res = simple_write_to_buffer(str, size, offs, user, size) + 1;
+	res = simple_write_to_buffer(str, size, offs, user, size);
 	str[size + 1] = '\0';
 	return res;
 }
