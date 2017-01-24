@@ -17,8 +17,7 @@ static ssize_t ft_read(struct file *fp, char __user *data, size_t len
 	int available;
 	int result;
 
-	if (*off >= 6)
-	{
+	if (*off >= 6) {
 		result = 0;
 		goto end;
 	}
@@ -26,12 +25,10 @@ static ssize_t ft_read(struct file *fp, char __user *data, size_t len
 		available = len;
 	else
 		available = 6 - *off;
-	if (copy_to_user(data, login + *off, available))
-	{
+	if (copy_to_user(data, login + *off, available)) {
 		result = -EINVAL;
 	}
-	else
-	{
+	else {
 		result = available;
 		*off += result;
 	}
@@ -46,13 +43,11 @@ static ssize_t ft_write(struct file *fp, const char __user *data, size_t len
 {
 	int result;
 
-	if (len != 6)
-	{
+	if (len != 6) {
 		result = -EINVAL;
 		goto end;
 	}
-	if (memcmp(data, login, 6))
-	{
+	if (memcmp(data, login, 6)) {
 		result = -EINVAL;
 		goto end;
 	}

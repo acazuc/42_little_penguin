@@ -11,7 +11,7 @@ int main()
 	int fd;
 	ssize_t ret;
 	printf("id:\n");
-	if ((fd = open("/sys/kernel/debug/fortyfor/id", O_RDWR)) == -1)
+	if ((fd = open("/sys/kernel/debug/fortytwo/id", O_RDWR)) == -1)
 	{
 		printf("open() failed\n");
 		return (EXIT_FAILURE);
@@ -40,7 +40,7 @@ int main()
 	printf("OK\n");
 	close(fd);
 	printf("\n\njiffies:\n");
-	if ((fd = open("/sys/kernel/debug/fortyfor/jiffies", O_RDONLY))
+	if ((fd = open("/sys/kernel/debug/fortytwo/jiffies", O_RDONLY))
 			== -1)
 	{
 		printf("open() failed\n");
@@ -55,7 +55,7 @@ int main()
 	printf("OK\n");
 	printf("jiffies: %lu\n", jiffies);
 	printf("\n\nfoo:\n");
-	if ((fd = open("/sys/kernel/debug/fortyfor/foo", O_RDWR))
+	if ((fd = open("/sys/kernel/debug/fortytwo/foo", O_RDWR))
 			== -1)
 	{
 		printf("open() failed\n");
@@ -88,7 +88,7 @@ int main()
 	}
 	printf("OK\n");
 	memset(buffer, 0, 13);
-	if ((fd = open("/sys/kernel/debug/fortyfor/foo", O_RDONLY)) == -1)
+	if ((fd = open("/sys/kernel/debug/fortytwo/foo", O_RDONLY)) == -1)
 	{
 		printf("open() failed\n");
 		return (EXIT_FAILURE);

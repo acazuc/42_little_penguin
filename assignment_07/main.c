@@ -14,7 +14,7 @@ static char login[7] = "acazuc";
 
 static void *foo_data = NULL;
 static size_t foo_len = 0;
-DEFINE_SEMAPHORE(foo_lock);
+DEFINE_MUTEX(foo_lock);
 
 static struct dentry *file_fortytwo;
 static struct dentry *file_id;
@@ -26,13 +26,11 @@ static ssize_t id_write(struct file *fp, const char __user *data, size_t len
 {
 	int result;
 
-	if (len != 6)
-	{
+	if (len != 6) {
 		result = EINVAL;
 		goto end;
 	}
-	if (memcmp(data, login, 6))
-	{
+	if (memcmp(data, login, 6)) {
 		result = -EINVAL;
 		goto end;
 	}
@@ -49,8 +47,7 @@ static ssize_t id_read(struct file *fp, char __user *data, size_t len
 	int available;
 	int result;
 
-	if (*off >= 6)
-	{
+	if (*off >= 6) {
 		result = 0;
 		goto end;
 	}
@@ -58,12 +55,10 @@ static ssize_t id_read(struct file *fp, char __user *data, size_t len
 		available = len;
 	else
 		available = 6 - *off;
-	if (copy_to_user(data, login + *off, available))
-	{
+	if (copy_to_user(data, login + *off, available)) {
 		result = -EINVAL;
 	}
-	else
-	{
+	else {
 		result = available;
 		*off += result;
 	}
@@ -80,19 +75,16 @@ static ssize_t jiffies_read(struct file *fp, char __user *data, size_t len
 	int result;
 
 	count = jiffies;
-	if (*off == 8)
-	{
+	if (*off == 8) {
 		result = 0;
 		goto end;
 	}
-	if (len < 8)
-	{
+	if (len < 8) {
 		result = -EINVAL;
 		goto end;
 	}
 	result = copy_to_user(data, &count, 8);
-	if (!result)
-	{
+	if (!result) {
 		*off = 8;
 		result = 8;
 	}
@@ -108,9 +100,8 @@ static ssize_t foo_write(struct file *fp, const char __user *data
 	int result;
 	int available;
 
-	down(&foo_lock);
-	if (foo_len >= PAGE_SIZE)
-	{
+	mutex_lock(&foo_lock);
+	if (foo_len >= PAGE_SIZE) {
 		result = 0;
 		goto end;
 	}
@@ -126,7 +117,7 @@ static ssize_t foo_write(struct file *fp, const char __user *data
 	result = available;
 
 end:
-	up(&foo_lock);
+	mutex_unlock(&foo_lock);
 	return result;
 }
 EXPORT_SYMBOL(foo_write);
@@ -137,9 +128,8 @@ static ssize_t foo_read(struct file *fp, char __user *data, size_t len,
 	int available;
 	int result;
 
-	down(&foo_lock);
-	if (*off >= foo_len)
-	{
+	mutex_lock(&foo_lock);
+	if (*off >= foo_len) {
 		result = 0;
 		goto end;
 	}
@@ -147,14 +137,14 @@ static ssize_t foo_read(struct file *fp, char __user *data, size_t len,
 		available = len;
 	else
 		available = foo_len - *off;
-	result = copy_to_user(data + *off, data, available);
+	result = copy_to_user(data, foo_data + *off, available);
 	if (result)
 		goto end;
 	*off += available;
 	result = available;
 
 end:
-	up(&foo_lock);
+	mutex_unlock(&foo_lock);
 	return result;
 }
 EXPORT_SYMBOL(foo_read);
@@ -181,32 +171,28 @@ int init_module(void)
 	int ret;
 
 	ret = 0;
-	if (!(file_fortytwo = debugfs_create_dir("fortyfor", NULL)))
-	{
+	if (!(file_fortytwo = debugfs_create_dir("fortytwo", NULL))) {
 		printk(KERN_ERR "Failed to create fortytwo dir\n");
 		goto err;
 	}
 	if (!(file_id = debugfs_create_file("id", 0666, file_fortytwo
-					, NULL, &id_fops)))
-	{
+					, NULL, &id_fops))) {
 		printk(KERN_ERR "Failed to create id file\n");
 		goto err_fortytwo;
 	}
 	if (!(file_jiffies = debugfs_create_file("jiffies", 0444
 					, file_fortytwo, NULL
-					, &jiffies_fops)))
-	{
+					, &jiffies_fops))) {
 		printk(KERN_ERR "Failed to create jiffies file\n");
 		goto err_id;
 	}
 	if (!(file_foo = debugfs_create_file("foo", 0644, file_fortytwo
-					, NULL, &foo_fops)))
-	{
+					, NULL, &foo_fops))) {
 		printk(KERN_ERR "Failed to create foo file\n");
 		goto err_jiffies;
 	}
-	if (!(foo_data = kmalloc(PAGE_SIZE, GFP_KERNEL)))
-	{
+	printk(KERN_DEBUG "PAGE_SIZE: %lu\n", PAGE_SIZE);
+	if (!(foo_data = kmalloc(PAGE_SIZE, GFP_KERNEL))) {
 		printk(KERN_ERR "Failed to allocate page of memory\n");
 		goto err_foo;
 	}
